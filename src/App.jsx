@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import AdSlot from "./components/AdSlot";
 import TaskTracker from "./components/TaskTracker";
+import { adsConfig, SIDE_RAIL_MEDIA_QUERY } from "./config/ads";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { lessons } from "./data/lessons";
+import { useMediaQuery } from "./hooks/useMediaQuery";
 import "./App.css";
 
 function readProgress() {
@@ -49,14 +52,14 @@ function LessonNavigation({ activeId, completedIds, onSelect }) {
   );
 }
 
-function LessonDetail({ lesson, isComplete, onToggleComplete, onNext }) {
+function LessonDetail({ lesson, isComplete, onToggleComplete, onPrevious, onNext, isFirst, isLast, cardRef }) {
   return (
-    <article className="lesson-card">
+    <article className="lesson-card" ref={cardRef} aria-labelledby="lesson-title">
       <div className="lesson-card-top">
         <span className="lesson-index">LESSON {lesson.number} <span aria-hidden="true">/</span> 08</span>
         {isComplete && <span className="complete-tag"><span aria-hidden="true">✓</span> Learned</span>}
       </div>
-      <h2>{lesson.title}</h2>
+      <h2 id="lesson-title">{lesson.title}</h2>
       <p className="lesson-intro">{lesson.explanation}</p>
 
       <div className="concept-callout">
@@ -91,9 +94,14 @@ function LessonDetail({ lesson, isComplete, onToggleComplete, onNext }) {
         >
           {isComplete ? "✓  Completed" : "Mark as learned"}
         </button>
-        <button className="next-lesson-button" onClick={onNext} type="button">
-          Next concept <span aria-hidden="true">→</span>
-        </button>
+        <div className="lesson-pager">
+          <button className="pager-button" disabled={isFirst} onClick={onPrevious} type="button">
+            <span aria-hidden="true">←</span> Previous
+          </button>
+          <button className="pager-button pager-button-next" onClick={onNext} type="button">
+            {isLast ? "Start building" : "Next concept"} <span aria-hidden="true">→</span>
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -105,7 +113,10 @@ function LearningApp() {
   const [activeLessonId, setActiveLessonId] = useState(lessons[0].id);
   const [completedIds, setCompletedIds] = useState(readProgress);
   const activeLesson = lessons.find((lesson) => lesson.id === activeLessonId) ?? lessons[0];
+  const activeIndex = lessons.indexOf(activeLesson);
   const progress = Math.round((completedIds.length / lessons.length) * 100);
+  const showSideAds = useMediaQuery(SIDE_RAIL_MEDIA_QUERY) && adsConfig.hasSideRails;
+  const lessonCardRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -123,136 +134,157 @@ function LearningApp() {
     );
   }
 
+  function selectLesson(id) {
+    setActiveLessonId(id);
+
+    const card = lessonCardRef.current;
+    if (card && card.getBoundingClientRect().top < 0) {
+      card.scrollIntoView({ block: "start" });
+    }
+  }
+
+  function goToPreviousLesson() {
+    if (activeIndex > 0) selectLesson(lessons[activeIndex - 1].id);
+  }
+
   function goToNextLesson() {
-    const currentIndex = lessons.findIndex((lesson) => lesson.id === activeLessonId);
-    if (currentIndex === lessons.length - 1) {
+    if (activeIndex === lessons.length - 1) {
       setActiveView("practice");
       return;
     }
-    setActiveLessonId(lessons[currentIndex + 1].id);
+    selectLesson(lessons[activeIndex + 1].id);
   }
 
   return (
-    <>
-      <header className="topbar">
-        <a className="brand" href="#top" onClick={() => setActiveView("learn")}>
-          <span className="brand-mark" aria-hidden="true">r.</span>
-          <span className="brand-copy">
-            <strong>React Fieldnotes</strong>
-            <small>learn by building</small>
-          </span>
-        </a>
-        <div className="topbar-right">
-          <span className="course-label"><span /> YOUR REACT STARTER KIT</span>
-          <button
-            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
-            className="theme-toggle"
-            onClick={toggleTheme}
-            type="button"
-          >
-            <span aria-hidden="true">{theme === "light" ? "☾" : "☼"}</span>
-            <span className="theme-label">{theme === "light" ? "Dark mode" : "Light mode"}</span>
-          </button>
-        </div>
-      </header>
-
-      <main id="top">
-        <section className="welcome-section">
-          <div>
-            <p className="eyebrow"><span className="eyebrow-line" /> A FRIENDLY GUIDE TO REACT</p>
-            <h1>Learn React.<br /><span>Make it yours.</span></h1>
-            <p className="welcome-copy">
-              The essentials, made practical. Explore one idea at a time, then put it to work in a tiny app.
-            </p>
+    <div className={`page-frame${showSideAds ? " has-side-ads" : ""}`}>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
+      {showSideAds && <AdSlot side="left" slot={adsConfig.slots.left} />}
+      <div className="page-content">
+        <header className="topbar">
+          <a className="brand" href="#main-content" onClick={() => setActiveView("learn")}>
+            <span className="brand-mark" aria-hidden="true">r.</span>
+            <span className="brand-copy">
+              <strong>React Fieldnotes</strong>
+              <small>learn by building</small>
+            </span>
+          </a>
+          <div className="topbar-right">
+            <span className="course-label"><span /> YOUR REACT STARTER KIT</span>
+            <button
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+              className="theme-toggle"
+              onClick={toggleTheme}
+              type="button"
+            >
+              <span aria-hidden="true">{theme === "light" ? "☾" : "☼"}</span>
+              <span className="theme-label">{theme === "light" ? "Dark mode" : "Light mode"}</span>
+            </button>
           </div>
-          <div className="welcome-aside">
-            <div className="progress-orbit" aria-label={`${progress}% course progress`}>
-              <strong>{String(completedIds.length).padStart(2, "0")}<small>/08</small></strong>
-            </div>
+        </header>
+
+        <main id="main-content" tabIndex={-1}>
+          <section className="welcome-section">
             <div>
-              <span className="aside-caption">YOUR PROGRESS</span>
-              <strong className="aside-title">{completedIds.length === 0 ? "A fresh start" : `${progress}% explored`}</strong>
-              <div className="progress-track" role="progressbar" aria-label="Learning path progress" aria-valuemax="100" aria-valuemin="0" aria-valuenow={progress}>
-                <span style={{ width: `${progress}%` }} />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="view-switcher" role="group" aria-label="Learning app views">
-          <button
-            aria-pressed={activeView === "learn"}
-            className={`view-tab${activeView === "learn" ? " is-selected" : ""}`}
-            onClick={() => setActiveView("learn")}
-            type="button"
-          >
-            <span className="tab-icon" aria-hidden="true">✳</span> Learn the concepts
-            <span className="tab-count">08</span>
-          </button>
-          <button
-            aria-pressed={activeView === "practice"}
-            className={`view-tab${activeView === "practice" ? " is-selected" : ""}`}
-            onClick={() => setActiveView("practice")}
-            type="button"
-          >
-            <span className="tab-icon" aria-hidden="true">↗</span> Build the app
-            <span className="tab-label">HANDS-ON</span>
-          </button>
-        </div>
-
-        {activeView === "learn" ? (
-          <div className="learning-layout">
-            <aside className="learning-sidebar">
-              <div className="sidebar-heading">
-                <span>THE LEARNING PATH</span>
-                <span>{String(completedIds.length).padStart(2, "0")} / 08</span>
-              </div>
-              <LessonNavigation
-                activeId={activeLessonId}
-                completedIds={completedIds}
-                onSelect={setActiveLessonId}
-              />
-              <div className="sidebar-note">
-                <span className="sidebar-note-mark" aria-hidden="true">✦</span>
-                <p>Small steps add up.<br /><strong>Try each idea yourself.</strong></p>
-              </div>
-            </aside>
-            <div className="lesson-main">
-              <LessonDetail
-                isComplete={completedIds.includes(activeLessonId)}
-                lesson={activeLesson}
-                onNext={goToNextLesson}
-                onToggleComplete={toggleLessonComplete}
-              />
-              <p className="lesson-footnote">
-                <span aria-hidden="true">◎</span> Learning sticks when you build. Edit the example, break it, and try again.
+              <p className="eyebrow"><span className="eyebrow-line" /> A FRIENDLY GUIDE TO REACT</p>
+              <h1>Learn React.<br /><span>Make it yours.</span></h1>
+              <p className="welcome-copy">
+                The essentials, made practical. Explore one idea at a time, then put it to work in a tiny app.
               </p>
             </div>
-          </div>
-        ) : (
-          <div className="practice-view">
-            <div className="practice-intro">
-              <div>
-                <p className="eyebrow"><span className="eyebrow-line" /> PUT THE PIECES TOGETHER</p>
-                <h2>A small app, <span>real React.</span></h2>
-                <p>Build a task tracker while practicing state, events, forms, lists, effects, and context.</p>
+            <div className="welcome-aside">
+              <div className="progress-orbit" aria-label={`${progress}% course progress`}>
+                <strong>{String(completedIds.length).padStart(2, "0")}<small>/08</small></strong>
               </div>
-              <div className="practice-stamp"><span>MADE FOR</span><strong>learning<br />by doing</strong><i>✳</i></div>
+              <div>
+                <span className="aside-caption">YOUR PROGRESS</span>
+                <strong className="aside-title">{completedIds.length === 0 ? "A fresh start" : `${progress}% explored`}</strong>
+                <div className="progress-track" role="progressbar" aria-label="Learning path progress" aria-valuemax="100" aria-valuemin="0" aria-valuenow={progress}>
+                  <span style={{ width: `${progress}%` }} />
+                </div>
+              </div>
             </div>
-            <TaskTracker />
-            <div className="practice-hint">
-              <span aria-hidden="true">✦</span>
-              Your tasks and theme are saved in this browser, so your practice will be here when you return.
-            </div>
-          </div>
-        )}
-      </main>
+          </section>
 
-      <footer className="site-footer">
-        <span><span className="footer-mark">r.</span> Keep curious. Keep building.</span>
-        <span>Made for your first steps with React <span aria-hidden="true">✳</span></span>
-      </footer>
-    </>
+          <div className="view-switcher" role="group" aria-label="Learning app views">
+            <button
+              aria-pressed={activeView === "learn"}
+              className={`view-tab${activeView === "learn" ? " is-selected" : ""}`}
+              onClick={() => setActiveView("learn")}
+              type="button"
+            >
+              <span className="tab-icon" aria-hidden="true">✳</span> Learn the concepts
+              <span className="tab-count">08</span>
+            </button>
+            <button
+              aria-pressed={activeView === "practice"}
+              className={`view-tab${activeView === "practice" ? " is-selected" : ""}`}
+              onClick={() => setActiveView("practice")}
+              type="button"
+            >
+              <span className="tab-icon" aria-hidden="true">↗</span> Build the app
+              <span className="tab-label">HANDS-ON</span>
+            </button>
+          </div>
+
+          {activeView === "learn" ? (
+            <div className="learning-layout">
+              <aside className="learning-sidebar">
+                <div className="sidebar-heading">
+                  <span>THE LEARNING PATH</span>
+                  <span>{String(completedIds.length).padStart(2, "0")} / 08</span>
+                </div>
+                <LessonNavigation
+                  activeId={activeLessonId}
+                  completedIds={completedIds}
+                  onSelect={selectLesson}
+                />
+                <div className="sidebar-note">
+                  <span className="sidebar-note-mark" aria-hidden="true">✦</span>
+                  <p>Small steps add up.<br /><strong>Try each idea yourself.</strong></p>
+                </div>
+              </aside>
+              <div className="lesson-main">
+                <LessonDetail
+                  cardRef={lessonCardRef}
+                  isComplete={completedIds.includes(activeLessonId)}
+                  isFirst={activeIndex === 0}
+                  isLast={activeIndex === lessons.length - 1}
+                  lesson={activeLesson}
+                  onNext={goToNextLesson}
+                  onPrevious={goToPreviousLesson}
+                  onToggleComplete={toggleLessonComplete}
+                />
+                <p className="lesson-footnote">
+                  <span aria-hidden="true">◎</span> Learning sticks when you build. Edit the example, break it, and try again.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="practice-view">
+              <div className="practice-intro">
+                <div>
+                  <p className="eyebrow"><span className="eyebrow-line" /> PUT THE PIECES TOGETHER</p>
+                  <h2>A small app, <span>real React.</span></h2>
+                  <p>Build a task tracker while practicing state, events, forms, lists, effects, and context.</p>
+                </div>
+                <div className="practice-stamp"><span>MADE FOR</span><strong>learning<br />by doing</strong><i>✳</i></div>
+              </div>
+              <TaskTracker />
+              <div className="practice-hint">
+                <span aria-hidden="true">✦</span>
+                Your tasks and theme are saved in this browser, so your practice will be here when you return.
+              </div>
+            </div>
+          )}
+        </main>
+
+        <footer className="site-footer">
+          <span><span className="footer-mark">r.</span> Keep curious. Keep building.</span>
+          <span>Made for your first steps with React <span aria-hidden="true">✳</span></span>
+        </footer>
+      </div>
+      {showSideAds && <AdSlot side="right" slot={adsConfig.slots.right} />}
+    </div>
   );
 }
 
