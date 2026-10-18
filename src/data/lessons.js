@@ -1,0 +1,98 @@
+export const lessons = [
+  {
+    id: "components",
+    number: "01",
+    group: "The building blocks",
+    title: "Components & JSX",
+    summary: "Build an interface from small, reusable pieces.",
+    explanation:
+      "A component is a JavaScript function that returns a piece of UI. JSX lets you describe that UI with familiar, markup-like syntax.",
+    takeaway: "A component name starts with a capital letter, and its return value describes what appears on screen.",
+    code: "function Welcome() {\n  return <h2>Hello, React!</h2>;\n}",
+    challenge: "Split a profile page into a Header, ProfileCard, and Footer component.",
+  },
+  {
+    id: "props",
+    number: "02",
+    group: "The building blocks",
+    title: "Props",
+    summary: "Pass information into a component.",
+    explanation:
+      "Props are the read-only values a parent gives to a child. They make one component useful in many different places.",
+    takeaway: "Keep a component reusable by describing what it needs with props instead of hard-coding its content.",
+    code: "function ProfileCard({ name, role }) {\n  return <p>{name} · {role}</p>;\n}\n\n<ProfileCard name=\"Maya\" role=\"Designer\" />",
+    challenge: "Render three profile cards from the same component using different props.",
+  },
+  {
+    id: "state",
+    number: "03",
+    group: "Make it interactive",
+    title: "State & events",
+    summary: "Respond to clicks and keep the UI in sync.",
+    explanation:
+      "State is a component's changing memory. When you update it with its setter, React renders the UI again with the new value.",
+    takeaway: "Call Hooks at the top level, and update state with the setter—not by changing the existing value.",
+    code: "const [count, setCount] = useState(0);\n\n<button onClick={() =>\n  setCount(current => current + 1)\n}>\n  Count: {count}\n</button>",
+    challenge: "Add increment, decrement, and reset buttons to a counter.",
+  },
+  {
+    id: "lists",
+    number: "04",
+    group: "Make it interactive",
+    title: "Lists & keys",
+    summary: "Turn arrays of data into useful UI.",
+    explanation:
+      "Use JavaScript's map method to render a component for each item. A stable key helps React identify each item when a list changes.",
+    takeaway: "Use a unique item ID as the key; array indexes are unreliable when items can move or disappear.",
+    code: "{tasks.map(task => (\n  <li key={task.id}>{task.title}</li>\n))}",
+    challenge: "Render a list of tasks and add a way to remove one item.",
+  },
+  {
+    id: "forms",
+    number: "05",
+    group: "Make it interactive",
+    title: "Forms & inputs",
+    summary: "Let people add and change information.",
+    explanation:
+      "A controlled input reads its value from state and updates that state in onChange. This keeps React in control of what the form displays.",
+    takeaway: "Handle form submission in onSubmit and call preventDefault to stop a browser page reload.",
+    code: "const [name, setName] = useState(\"\");\n\n<input\n  value={name}\n  onChange={event => setName(event.target.value)}\n/>",
+    challenge: "Add a task-entry form that rejects empty input and clears after submit.",
+  },
+  {
+    id: "derived-state",
+    number: "06",
+    group: "Think in React",
+    title: "Sharing & derived state",
+    summary: "Give state a clear home and avoid duplicates.",
+    explanation:
+      "Keep state in the closest common parent that needs it. Values that can be calculated from existing state usually do not need their own state.",
+    takeaway: "Pass data and event handlers through props; calculate filtered lists during render.",
+    code: "const visibleTasks = tasks.filter(task =>\n  filter === \"all\" ||\n  (filter === \"done\") === task.done\n);",
+    challenge: "Add All, Active, and Done filters to the task list.",
+  },
+  {
+    id: "effects",
+    number: "07",
+    group: "Think in React",
+    title: "Effects",
+    summary: "Synchronize with browser APIs and beyond.",
+    explanation:
+      "useEffect synchronizes a component with an external system, such as localStorage. It is not needed for values you can calculate while rendering.",
+    takeaway: "List the reactive values an effect uses as dependencies, and clean up subscriptions or resources when needed.",
+    code: "useEffect(() => {\n  localStorage.setItem(\"tasks\", JSON.stringify(tasks));\n}, [tasks]);",
+    challenge: "Keep your task list after a page refresh using localStorage.",
+  },
+  {
+    id: "reusable-logic",
+    number: "08",
+    group: "Think in React",
+    title: "Context, reducers & Hooks",
+    summary: "Reach for structure when it solves a problem.",
+    explanation:
+      "Context shares values across a component tree, reducers centralize complex state transitions, and custom Hooks reuse stateful logic.",
+    takeaway: "These tools are options—not requirements for every component. Start with the simplest design that works.",
+    code: "function useTasks() {\n  const [tasks, dispatch] = useReducer(\n    tasksReducer,\n    initialTasks\n  );\n  return { tasks, dispatch };\n}",
+    challenge: "Add a theme toggle, then try moving task updates into a reducer.",
+  },
+];
