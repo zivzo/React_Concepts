@@ -56,13 +56,13 @@ function Counter() {
 }
 ```
 
-**Practice:** Build a counter with increment, decrement, and reset buttons. Then make a show/hide button for a paragraph. Notice that event handlers are passed as functions, such as `onClick={handleClick}`, rather than called during render.
+**Practice:** Build a counter with increment, decrement, and reset buttons. Use a functional state update for the counter, such as `setCount(current => current + 1)`. Then make a show/hide button for a paragraph. Notice that event handlers are passed as functions, such as `onClick={handleClick}`, rather than called during render.
 
 ### 4. Lists and keys
 
 Use JavaScript to transform data into UI. Give each rendered item a stable, unique `key` so React can keep track of it when the list changes.
 
-**Practice:** Store a few tasks in an array and render them with `map`. Add a task ID as its key. Add a button to remove a task and verify that removing one item does not affect the others.
+**Practice:** Store a few tasks in an array and render them with `map`. Give each task a stable ID for its key; avoid using the array index when items can be added or removed. Add buttons to complete and remove tasks by creating new arrays with methods such as `map` and `filter`, rather than mutating the state array.
 
 ### 5. Forms and controlled inputs
 
@@ -80,7 +80,7 @@ Keep each piece of state in the closest common parent that needs to read or chan
 
 `useEffect` synchronizes a component with something outside React, such as a browser API or network connection. It is not needed for values that can be calculated while rendering. Effects that subscribe or start a resource should clean it up when they are no longer needed.
 
-**Practice:** Save and restore your task list with `localStorage` in an effect. Try editing tasks, refreshing the page, and opening the app again. Pay attention to the effect's dependencies and avoid putting derived display values in state.
+**Practice:** Initialize your task state from `localStorage` (using a lazy `useState` initializer), then save it in an effect whenever it changes. This prevents the initial empty state from overwriting saved tasks before they are restored. Try editing tasks and refreshing the page. Pay attention to the effect's dependencies and avoid putting derived display values in state.
 
 ### 8. Context, reducers, and custom Hooks
 
