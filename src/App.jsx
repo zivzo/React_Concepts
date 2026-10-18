@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import TaskTracker from "./components/TaskTracker";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { lessons } from "./data/lessons";
 import "./App.css";
+
+const CodePlayground = lazy(() => import("./components/CodePlayground"));
 
 function readProgress() {
   try {
@@ -49,7 +51,7 @@ function LessonNavigation({ activeId, completedIds, onSelect }) {
   );
 }
 
-function LessonDetail({ lesson, isComplete, onToggleComplete, onNext }) {
+function LessonDetail({ lesson, isComplete, onToggleComplete, onNext, onOpenPlayground }) {
   return (
     <article className="lesson-card">
       <div className="lesson-card-top">
@@ -90,6 +92,9 @@ function LessonDetail({ lesson, isComplete, onToggleComplete, onNext }) {
           type="button"
         >
           {isComplete ? "✓  Completed" : "Mark as learned"}
+        </button>
+        <button className="button button-secondary" onClick={onOpenPlayground} type="button">
+          <span aria-hidden="true">▶</span> Try it live
         </button>
         <button className="next-lesson-button" onClick={onNext} type="button">
           Next concept <span aria-hidden="true">→</span>
@@ -198,6 +203,15 @@ function LearningApp() {
             <span className="tab-icon" aria-hidden="true">↗</span> Build the app
             <span className="tab-label">HANDS-ON</span>
           </button>
+          <button
+            aria-pressed={activeView === "playground"}
+            className={`view-tab${activeView === "playground" ? " is-selected" : ""}`}
+            onClick={() => setActiveView("playground")}
+            type="button"
+          >
+            <span className="tab-icon" aria-hidden="true">▶</span> Code playground
+            <span className="tab-label">LIVE</span>
+          </button>
         </div>
 
         {activeView === "learn" ? (
@@ -222,12 +236,27 @@ function LearningApp() {
                 isComplete={completedIds.includes(activeLessonId)}
                 lesson={activeLesson}
                 onNext={goToNextLesson}
+                onOpenPlayground={() => setActiveView("playground")}
                 onToggleComplete={toggleLessonComplete}
               />
               <p className="lesson-footnote">
                 <span aria-hidden="true">◎</span> Learning sticks when you build. Edit the example, break it, and try again.
               </p>
             </div>
+          </div>
+        ) : activeView === "playground" ? (
+          <div className="practice-view">
+            <div className="practice-intro">
+              <div>
+                <p className="eyebrow"><span className="eyebrow-line" /> WRITE IT YOURSELF</p>
+                <h2>Your code, <span>live.</span></h2>
+                <p>Start from any lesson's example, change it, and watch your React component render instantly.</p>
+              </div>
+              <div className="practice-stamp"><span>EDIT</span><strong>break it,<br />fix it</strong><i>▶</i></div>
+            </div>
+            <Suspense fallback={<p className="playground-loading">Loading the playground…</p>}>
+              <CodePlayground key={activeLessonId} lessonId={activeLessonId} onSelectLesson={setActiveLessonId} />
+            </Suspense>
           </div>
         ) : (
           <div className="practice-view">
