@@ -53,6 +53,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), googleAdSense(adsenseClient)],
-    base: '/React_Concepts',
+    base: '/React_Concepts/',
   }
 })
