@@ -1015,18 +1015,19 @@ p {
   display: grid;
   gap: 4px;
   color: var(--muted);
-  font: 500 9px var(--font-mono);
+  font: 500 12px var(--font-sans);
+  letter-spacing: .08em;
 }
 
 .playground-select select {
-  height: 37px;
+  height: 44px;
   max-width: 100%;
-  padding: 0 10px;
+  padding: 0 12px;
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 10px;
   background: var(--surface-soft);
   color: var(--ink);
-  font: 600 11px var(--font-sans);
+  font: 600 14px var(--font-sans);
 }
 
 .playground-select select:focus-visible,
@@ -1066,7 +1067,7 @@ p {
   border-radius: 5px;
   background: var(--green-pale);
   color: var(--green-dark);
-  font: 500 8px var(--font-mono);
+  font: 600 11px var(--font-sans);
 }
 
 .playground-status.is-error {
@@ -1080,7 +1081,7 @@ p {
   align-items: flex-start;
   overflow-x: hidden;
   overflow-y: auto;
-  font: 12px/1.7 var(--font-mono);
+  font: 14px/1.7 var(--font-mono);
 }
 
 .code-editor-lines {
@@ -1126,11 +1127,12 @@ p {
   padding: 18px;
   background: var(--surface);
   color: var(--ink);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
 .playground-preview button {
+  min-height: 36px;
   margin: 2px 4px 2px 0;
   padding: 5px 12px;
   border: 1px solid var(--line);
@@ -1163,21 +1165,21 @@ p {
 }
 
 .playground-error strong {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .playground-error pre {
   margin: 6px 0 0;
   white-space: pre-wrap;
   word-break: break-word;
-  font: 11px/1.6 var(--font-mono);
+  font: 13px/1.6 var(--font-mono);
 }
 
 .playground-help {
   margin: 13px 0 0;
   color: var(--muted);
-  font-size: 10px;
-  line-height: 1.8;
+  font-size: 13px;
+  line-height: 1.9;
 }
 
 .playground-help kbd,
@@ -1187,7 +1189,7 @@ p {
   border-radius: 4px;
   background: var(--surface-soft);
   color: var(--muted-strong);
-  font: 9px var(--font-mono);
+  font: 12px var(--font-mono);
 }
 
 .playground-loading {
@@ -1195,7 +1197,7 @@ p {
   display: grid;
   place-items: center;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .skip-link {
