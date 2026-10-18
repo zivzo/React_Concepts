@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import AdSlot from "./components/AdSlot";
 import TaskTracker from "./components/TaskTracker";
 import { adsConfig, SIDE_RAIL_MEDIA_QUERY } from "./config/ads";
@@ -6,6 +6,8 @@ import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { lessons } from "./data/lessons";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import "./App.css";
+
+const CodePlayground = lazy(() => import("./components/CodePlayground"));
 
 function readProgress() {
   try {
@@ -52,7 +54,7 @@ function LessonNavigation({ activeId, completedIds, onSelect }) {
   );
 }
 
-function LessonDetail({ lesson, isComplete, onToggleComplete, onPrevious, onNext, isFirst, isLast, cardRef }) {
+function LessonDetail({ lesson, isComplete, onToggleComplete, onPrevious, onNext, onOpenPlayground, isFirst, isLast, cardRef }) {
   return (
     <article className="lesson-card" ref={cardRef} aria-labelledby="lesson-title">
       <div className="lesson-card-top">
@@ -93,6 +95,9 @@ function LessonDetail({ lesson, isComplete, onToggleComplete, onPrevious, onNext
           type="button"
         >
           {isComplete ? "✓  Completed" : "Mark as learned"}
+        </button>
+        <button className="button button-secondary" onClick={onOpenPlayground} type="button">
+          <span aria-hidden="true">▶</span> Try it live
         </button>
         <div className="lesson-pager">
           <button className="pager-button" disabled={isFirst} onClick={onPrevious} type="button">
@@ -224,6 +229,15 @@ function LearningApp() {
               <span className="tab-icon" aria-hidden="true">↗</span> Build the app
               <span className="tab-label">HANDS-ON</span>
             </button>
+            <button
+              aria-pressed={activeView === "playground"}
+              className={`view-tab${activeView === "playground" ? " is-selected" : ""}`}
+              onClick={() => setActiveView("playground")}
+              type="button"
+            >
+              <span className="tab-icon" aria-hidden="true">▶</span> Code playground
+              <span className="tab-label">LIVE</span>
+            </button>
           </div>
 
           {activeView === "learn" ? (
@@ -251,6 +265,7 @@ function LearningApp() {
                   isLast={activeIndex === lessons.length - 1}
                   lesson={activeLesson}
                   onNext={goToNextLesson}
+                  onOpenPlayground={() => setActiveView("playground")}
                   onPrevious={goToPreviousLesson}
                   onToggleComplete={toggleLessonComplete}
                 />
@@ -258,6 +273,20 @@ function LearningApp() {
                   <span aria-hidden="true">◎</span> Learning sticks when you build. Edit the example, break it, and try again.
                 </p>
               </div>
+            </div>
+          ) : activeView === "playground" ? (
+            <div className="practice-view">
+              <div className="practice-intro">
+                <div>
+                  <p className="eyebrow"><span className="eyebrow-line" /> WRITE IT YOURSELF</p>
+                  <h2>Your code, <span>live.</span></h2>
+                  <p>Start from any lesson's example, change it, and watch your React component render instantly.</p>
+                </div>
+                <div className="practice-stamp"><span>EDIT</span><strong>break it,<br />fix it</strong><i>▶</i></div>
+              </div>
+              <Suspense fallback={<p className="playground-loading">Loading the playground…</p>}>
+                <CodePlayground key={activeLessonId} lessonId={activeLessonId} onSelectLesson={setActiveLessonId} />
+              </Suspense>
             </div>
           ) : (
             <div className="practice-view">
